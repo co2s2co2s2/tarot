@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tarot Danışmanı</title>
+    <style>
+        body {
+            background-color: #0d0f17;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #1a1d2d;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #2d3248;
+        }
+        h1 { text-align: center; color: #a78bfa; margin-bottom: 24px; }
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #0d0f17;
+            border: 1px solid #3b4261;
+            border-radius: 8px;
+            color: #fff;
+            padding: 12px;
+            box-sizing: border-box;
+            font-size: 16px;
+            resize: none;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c3aed, #4c1d95);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        #result {
+            margin-top: 24px;
+            line-height: 1.6;
+            white-space: pre-line;
+            border-top: 1px solid #2d3248;
+            padding-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔮 AI Tarot Danışmanı</h1>
+    <textarea id="question" placeholder="Aklınızdaki soruyu veya durumu yazın..."></textarea>
+    <button onclick="getTarotReading()" id="btn">Falımı Yorumla</button>
+    <div id="result"></div>
+</div>
+
+<script>
+const GEMINI_API_KEY = "AQ.Ab8RN6IZ6xjJt8S17Rod1fv7-Ax655SOdotkY6JS6E4qTpNhyA";
+
+async function getTarotReading() {
+    const question = document.getElementById("question").value.trim();
+    const resultDiv = document.getElementById("result");
+    const btn = document.getElementById("btn");
+
+    if (!question) {
+        alert("Lütfen bir soru yazın.");
+        return;
+    }
+
+    resultDiv.innerHTML = "✨ Kartlar karıştırılıyor ve enerjiniz analiz ediliyor...";
+    btn.disabled = true;
+
+    // Sistem Talimatı + İstek Gövdesi
+    const promptText = `
+    Sen uzman, empatik ve sezgisel bir Tarot Danışmanısın.
+    Kullanıcı sana şu soruyu sordu: "${question}"
+    
+    Lütfen rastgele 3 tarot kartı çekmiş gibi yap (Geçmiş, Şimdi, Gelecek veya Durum, Tavsiye, Sonuç olarak düşün).
+    Kart isimlerini belirt ve kullanıcının sorusuna doğrudan, akıcı, mistik ama gerçekçi bir dille rehberlik et.
+    `;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }]
+            })
+        });
+
+        const data = await response.json();
+        const reply = data.candidates[0].content.parts[0].text;
+        resultDiv.innerHTML = reply;
+    } catch (error) {
+        resultDiv.innerHTML = "❌ Bir hata oluştu. Lütfen API anahtarınızı veya bağlantınızı kontrol edin.";
+        console.error(error);
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+
+</body>
+</html>
